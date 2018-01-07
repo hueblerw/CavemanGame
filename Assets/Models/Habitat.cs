@@ -1,6 +1,5 @@
 ﻿using System;
 
-
 public class Habitat {
 
     // Constants
@@ -22,15 +21,18 @@ public class Habitat {
 
     // Variables
     public string dominantType;
-    public double[] typePercents;
-
+    public Subhabitat[] typePercents;
 
     // Constructor
     public Habitat(double oceanPer, int[] habitatCounters)
     {
-        typePercents = new double[TOTAL_LAND_HABITATS + 1];
+        typePercents = new Subhabitat[TOTAL_LAND_HABITATS + 1];
+        for (int i = 0; i < TOTAL_LAND_HABITATS + 1; i++)
+        {
+            typePercents[i] = new Subhabitat(i);
+        }
         CreateInitialPercentage(oceanPer, habitatCounters);
-        dominantType = IndexToString(getDominantIndex());
+        dominantType = Subhabitat.IndexToString(getDominantIndex());
     }
 
 
@@ -41,64 +43,10 @@ public class Habitat {
         for (int i = 0; i < habitatCounters.Length; i++)
         {
             // Debug.Log(habitatCounters[i] + ", " + oceanPer);
-            typePercents[i] = Math.Round((habitatCounters[i] / 20.0) * (1.0 - oceanPer), 2);
+            typePercents[i].setPercentage(Math.Round((habitatCounters[i] / 20.0) * (1.0 - oceanPer), 2));
             // Debug.Log(i + " - " + typePercents[i]);
         }
-        typePercents[13] = oceanPer;
-    }
-
-
-    // Convert the index to a habitat string
-    private string IndexToString(int index)
-    {
-        string name = "";
-        switch (index)
-        {
-            case 0:
-                name = "glacier";
-                break;
-            case 1:
-                name = "dry tundra";
-                break;
-            case 2:
-                name = "tundra";
-                break;
-            case 3:
-                name = "boreal";
-                break;
-            case 4:
-                name = "artic marsh";
-                break;
-            case 5:
-                name = "desert";
-                break;
-            case 6:
-                name = "plains";
-                break;
-            case 7:
-                name = "forest";
-                break;
-            case 8:
-                name = "swamp";
-                break;
-            case 9:
-                name = "hot desert";
-                break;
-            case 10:
-                name = "savannah";
-                break;
-            case 11:
-                name = "monsoon forest";
-                break;
-            case 12:
-                name = "rainforest";
-                break;
-            case 13:
-                name = "ocean";
-                break;
-        }
-
-        return name;
+        typePercents[13].setPercentage(oceanPer);
     }
 
     // Convert String name to index number
@@ -158,7 +106,7 @@ public class Habitat {
     // determine the dominant type
     private string CheckDominantType()
     {
-        return IndexToString(getDominantIndex());
+        return Subhabitat.IndexToString(getDominantIndex());
     }
 
 
@@ -170,7 +118,7 @@ public class Habitat {
             int maxIndex = 0;
             for (int i = 0; i < typePercents.Length - 1; i++)
             {
-                if (typePercents[i] > typePercents[maxIndex])
+                if (typePercents[i].getPercentage() > typePercents[maxIndex].getPercentage())
                 {
                     maxIndex = i;
                 }
@@ -186,7 +134,7 @@ public class Habitat {
 
     private double getOceanPercents()
     {
-        return typePercents[13];
+        return typePercents[13].getPercentage();
     }
 
 
@@ -196,9 +144,9 @@ public class Habitat {
         string data = "Habitats: ";
         for (int i = 0; i < typePercents.Length; i++)
         {
-            if (typePercents[i] != 0.0)
+            if (typePercents[i].getPercentage() != 0.0)
             {
-                data += "\n" + typePercents[i] * 100.0 + "% " + IndexToString(i);
+                data += "\n" + typePercents[i].getPercentage() * 100.0 + "% " + Subhabitat.IndexToString(i);
             }
         }
         return data;
