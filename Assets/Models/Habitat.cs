@@ -10,9 +10,6 @@ public class Habitat {
     public const double SCRUBCONSTANT = 55.0 * 0.006363525;
     public const double DESERTSCRUBCONSTANT = 35.0 * 0.004049516;
     public const double FORESTLEAVESCONSTANT = 200.0 * 0.019283411;
-    public const double PINENEEDLECONSTANT = 150.0 * 0.008677535;
-    public const double TROPICALEAFGROWTH = 1.2;
-    public const double ARTICLEAFGROWTH = 0.8;
     private double EnvironmentalShiftFactor = .01; // +/- 1% a year
     private double GlacialShiftFactor = .10; // +/- 10% a year
     public const double RIVER_EFFECT_FACTOR = (RIVERWATERINGCONSTANT / 2.0);  // 10% of river volume added to the tiles rainfall
@@ -47,59 +44,6 @@ public class Habitat {
             // Debug.Log(i + " - " + typePercents[i]);
         }
         typePercents[13].setPercentage(oceanPer);
-    }
-
-    // Convert String name to index number
-    public static int StringToIndex(string name)
-    {
-        int index = -1;
-        switch (name)
-        {
-            case "glacier":
-                index = 0;
-                break;
-            case "dry_tundra":
-                index = 1;
-                break;
-            case "tundra":
-                index = 2;
-                break;
-            case "boreal":
-                index = 3;
-                break;
-            case "artic_marsh":
-                index = 4;
-                break;
-            case "desert":
-                index = 5;
-                break;
-            case "plains":
-                index = 6;
-                break;
-            case "forest":
-                index = 7;
-                break;
-            case "swamp":
-                index = 8;
-                break;
-            case "hot_desert":
-                index = 9;
-                break;
-            case "savannah":
-                index = 10;
-                break;
-            case "monsoon_forest":
-                index = 11;
-                break;
-            case "rainforest":
-                index = 12;
-                break;
-            case "ocean":
-                index = 13;
-                break;
-        }
-
-        return index;
     }
 
 
@@ -138,6 +82,39 @@ public class Habitat {
     }
 
 
+    private int getTrees(string type)
+    {
+        int sum = 0;
+        for (int i = 0; i < typePercents.Length; i++)
+        {
+            sum += typePercents[i].getTrees(type);
+        }
+        return sum;
+    }
+
+
+    private double getSeeds()
+    {
+        double sum = 0;
+        for (int i = 0; i < typePercents.Length; i++)
+        {
+            sum += typePercents[i].getSeeds();
+        }
+        return sum;
+    }
+
+
+    private double getFoilage(Days[] days)
+    {
+        double sum = 0;
+        for (int i = 0; i < typePercents.Length; i++)
+        {
+            sum += typePercents[i].getFoilage(days);
+        }
+        return sum;
+    }
+
+
     // Return a string with the habitat stats in it
     public override string ToString()
     {
@@ -150,6 +127,14 @@ public class Habitat {
             }
         }
         return data;
+    }
+
+
+    public string printLifeInfo(Days[] days)
+    {
+        string life = "Plants: \nPine Trees: " + getTrees("pine") + "\tOaks: " + getTrees("oaks") + "\tTropical: " + getTrees("tropical");
+        life += "\nSeeds for Year: " + getSeeds() + "\tFoilage for Year: " + getFoilage(days);
+        return life;
     }
 
 }

@@ -70,7 +70,7 @@ public class World
         string weatherInfo = worldArray[x, z].dayArray[day - 1].printWeatherInfo();
         string riverDirectionInfo = worldArray[x, z].printRiverDirections();
         string habitatInfo = worldArray[x, z].habitat.ToString();
-        string lifeInfo = worldArray[x, z].dayArray[day - 1].printLifeInfo();
+        string lifeInfo = worldArray[x, z].habitat.printLifeInfo(worldArray[x, z].dayArray);
         return elevationInfo + "\n" + weatherInfo + "\t" + riverDirectionInfo +  "\n" + habitatInfo + "\n" + lifeInfo;
     }
 

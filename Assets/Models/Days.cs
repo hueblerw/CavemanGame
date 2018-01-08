@@ -48,8 +48,4 @@ public class Days {
         return weather;
     }
 
-    public string printLifeInfo()
-    {
-        return "Plants & Animals: ";
-    }
 }
