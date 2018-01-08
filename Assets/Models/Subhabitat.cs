@@ -18,6 +18,7 @@ public class Subhabitat
     private int quality;
 
     private Tree tree;
+    private Grass grass;
 
     private static Dictionary<int, string> indexToStringMap;
     private static Dictionary<string, int> stringToIndexMap;
@@ -35,9 +36,11 @@ public class Subhabitat
         {
             case 1:
                 // dry tundra
+                grass = new Grass(0.0);
                 break;
             case 2:
                 // tundra
+                grass = new Grass(0.0);
                 break;
             case 3:
                 // boreal
@@ -49,9 +52,11 @@ public class Subhabitat
                 break;
             case 5:
                 // desert
+                grass = new Grass(0.0);
                 break;
             case 6:
                 // plains
+                grass = new Grass(0.0);
                 break;
             case 7:
                 // forest
@@ -63,9 +68,11 @@ public class Subhabitat
                 break;
             case 9:
                 // hot desert
+                grass = new Grass(0.0);
                 break;
             case 10:
                 // savannah
+                grass = new Grass(0.0);
                 break;
             case 11:
                 // monsoon forest
@@ -126,6 +133,23 @@ public class Subhabitat
         return foilage;
     }
 
+    // Return the grazing available for this square today.
+    public double getGrazing(int day, Days[] days)
+    {
+        double last5Rain = Last5DaysOfRain(day, days);
+        double grassMass = grass.getGrass(index % 4 == 1, quality, percentage, last5Rain, days[day].temp) - usage;
+        double grazing = grassMass * Grass.GRASSCALORIECONTENT;
+
+        return grazing;
+    }
+
+    // METHODS
+
+    public double Last5DaysOfRain(int day, Days[] days)
+    {
+        return 0.0;
+    }
+
     // INDEXING
 
     public static int StringToIndex(string name)
@@ -137,7 +161,6 @@ public class Subhabitat
 
         return stringToIndexMap[name];
     }
-
 
     public static string IndexToString(int index)
     {
