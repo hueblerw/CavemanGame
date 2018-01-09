@@ -32,8 +32,8 @@ public class Habitat {
         dominantType = Subhabitat.IndexToString(getDominantIndex());
     }
 
-
     // PRIVATE METHODS
+
     // Initialize the Habitats based on the counter array
     private void CreateInitialPercentage(double oceanPer, int[] habitatCounters)
     {
@@ -93,23 +93,34 @@ public class Habitat {
     }
 
 
-    private double getSeeds()
+    private double getYearOfSeeds(Days[] days)
     {
         double sum = 0;
         for (int i = 0; i < typePercents.Length; i++)
         {
-            sum += typePercents[i].getSeeds();
+            sum += typePercents[i].getYearOfSeeds(days);
         }
         return sum;
     }
 
 
-    private double getFoilage(Days[] days)
+    private double getYearOfFoilage(Days[] days)
     {
-        double sum = 0;
+        double sum = 0.0;
         for (int i = 0; i < typePercents.Length; i++)
         {
-            sum += typePercents[i].getFoilage(days);
+            sum += typePercents[i].getYearOfFoilage(days);
+        }
+        return sum;
+    }
+
+
+    private double getYearOfGrazing(Days[] days)
+    {
+        double sum = 0.0;
+        for (int i = 0; i < typePercents.Length; i++)
+        {
+            sum += typePercents[i].getYearOfGrazing(days);
         }
         return sum;
     }
@@ -133,7 +144,8 @@ public class Habitat {
     public string printLifeInfo(Days[] days)
     {
         string life = "Plants: \nPine Trees: " + getTrees("pine") + "\tOaks: " + getTrees("oaks") + "\tTropical: " + getTrees("tropical");
-        life += "\nSeeds for Year: " + getSeeds() + "\tFoilage for Year: " + getFoilage(days);
+        life += "\nSeeds for Year: " + getYearOfSeeds(days) + "\tFoilage for Year: " + getYearOfFoilage(days);
+        life += "\nGrazing for Year: " + getYearOfGrazing(days);
         return life;
     }
 

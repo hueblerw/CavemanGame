@@ -30,12 +30,13 @@ public class Tree : Plant {
         }
     }
 
-    public double getSeeds(double percentage, int quality, bool swamp)
+    // subtract usage from all trees numbers.
+    public double getSeeds(double percentage, int quality, int usage, bool swamp)
     {
-        return getTreesOnTile(percentage, quality, swamp) * seedConstant;
+        return (getTreesOnTile(percentage, quality, swamp) - usage) * seedConstant;
     }
 
-    public virtual double getTreeFoilage(double percentage, int quality, bool swamp, Days[] days)
+    public virtual double getTreeFoilage(int day, double percentage, int quality, int todayTemp, int usage, bool swamp)
     {
         throw new InvalidCastException();
     }

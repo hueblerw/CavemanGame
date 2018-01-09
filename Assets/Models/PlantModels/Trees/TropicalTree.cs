@@ -10,34 +10,28 @@ public class TropicalTree : Tree {
         seedConstant = Habitat.SEEDCONSTANT;
     }
 
-    public override double getTreeFoilage(double percentage, int quality, bool rainforest, Days[] days)
+    public override double getTreeFoilage(int day, double percentage, int quality, int todayTemp, int usage, bool rainforest)
     {
-        double foilage = 0.0;
+        double treeBiomass = 0.0;
         if (rainforest)
         {
-            foilage = getTreesOnTile(percentage, quality, rainforest) * FORESTLEAVESCONSTANT * RAINFOREST_LEAFAGE;
+            treeBiomass = (getTreesOnTile(percentage, quality, rainforest) - usage) * FORESTLEAVESCONSTANT * RAINFOREST_LEAFAGE;
         }
         else
         {
-            foilage = getTreesOnTile(percentage, quality, rainforest) * FORESTLEAVESCONSTANT * MONSOON_LEAFAGE;
+            treeBiomass = (getTreesOnTile(percentage, quality, rainforest) - usage) * FORESTLEAVESCONSTANT * MONSOON_LEAFAGE;
         }
         // Temperature Effect
-        double sum = 0.0;
-        int todayTemp;
-        for (int d = 0; d < Date.DAYS_PER_YEAR; d++)
+        if (todayTemp > 50)
+            return treeBiomass;
+        else
         {
-            todayTemp = days[d].temp;
-            if (todayTemp > 50)
-                sum += foilage;
-            else
+            if (todayTemp > 30)
             {
-                if (todayTemp > 30)
-                {
-                    sum += ((todayTemp - 30.0) / 20.0) * foilage;
-                }
+                return ((todayTemp - 30.0) / 20.0) * treeBiomass;
             }
         }
-        return sum;
+        return treeBiomass;
     }
 
 }

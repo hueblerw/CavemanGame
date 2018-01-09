@@ -85,6 +85,8 @@ public class Subhabitat
         }
     }
 
+    // Getters and Setters
+
     public double getPercentage()
     {
         return percentage;
@@ -100,7 +102,7 @@ public class Subhabitat
         this.percentage = percentage;
     }
 
-    // Get Vegetation
+    // Get Trees
 
     public int getTrees(string type)
     {
@@ -110,37 +112,79 @@ public class Subhabitat
             trees = tree.getTreesOnTile(percentage, quality, index % 4 == 0);
         }
 
-        return trees - (int) usage;
+        return trees - (int)usage;
     }
 
-    public double getSeeds()
+    // Get Vegetation Daily values
+
+    public double getGrazing(int day, Days[] days)
+    {
+        double grazing = 0.0;
+        if (grass != null)
+        {
+            double last5Rain = Last5DaysOfRain(day, days);
+            double grassMass = grass.getGrass(index % 4 == 1, quality, percentage, last5Rain, days[day].temp) - usage;
+            grazing += grassMass * Grass.GRASSCALORIECONTENT;
+        }
+
+        return grazing;
+    }
+
+    public double getSeeds(int day, Days[] days)
     {
         double seeds = 0.0;
         if (tree != null)
         {
-            seeds += tree.getSeeds(percentage, quality, index % 4 == 0) * Date.DAYS_PER_YEAR;
+            seeds += tree.getSeeds(percentage, quality, (int) usage, index % 4 == 0);
+        }
+        if (grass != null)
+        {
+            double last5Rain = Last5DaysOfRain(day, days);
+            seeds += grass.getSeeds(index % 4 == 1, quality, percentage, last5Rain, days[day].temp, usage);
         }
         return seeds;
     }
 
-    public double getFoilage(Days[] days)
+    public double getFoilage(int day, Days[] days)
     {
         double foilage = 0.0;
         if (tree != null)
         {
-            foilage += tree.getTreeFoilage(percentage, quality, index % 4 == 0, days);
+            foilage += tree.getTreeFoilage(day, percentage, quality, days[day].temp, (int) usage,index % 4 == 0);
         }
         return foilage;
     }
 
-    // Return the grazing available for this square today.
-    public double getGrazing(int day, Days[] days)
-    {
-        double last5Rain = Last5DaysOfRain(day, days);
-        double grassMass = grass.getGrass(index % 4 == 1, quality, percentage, last5Rain, days[day].temp) - usage;
-        double grazing = grassMass * Grass.GRASSCALORIECONTENT;
+    // Get Vegetation Yearly values
 
-        return grazing;
+    public double getYearOfSeeds(Days[] days)
+    {
+        double sum = 0.0;
+        for (int d = 0; d < days.Length; d++)
+        {
+            sum += getSeeds(d, days);
+        }
+        return sum;
+    }
+
+    public double getYearOfFoilage(Days[] days)
+    {
+        double sum = 0.0;
+        for (int d = 0; d < days.Length; d++)
+        {
+            sum += getFoilage(d, days);
+        }
+        return sum;
+    }
+
+    public double getYearOfGrazing(Days[] days)
+    {
+        double sum = 0.0;
+        for (int d = 0; d < days.Length; d++)
+        {
+            sum += getGrazing(d, days);
+        }
+        return sum;
     }
 
     // METHODS
