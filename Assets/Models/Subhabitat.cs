@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class Subhabitat
 {
@@ -19,6 +20,8 @@ public class Subhabitat
 
     private Tree tree;
     private Grass grass;
+    private Bush bushOne;
+    private Bush bushTwo;
 
     private static Dictionary<int, string> indexToStringMap;
     private static Dictionary<string, int> stringToIndexMap;
@@ -37,50 +40,71 @@ public class Subhabitat
             case 1:
                 // dry tundra
                 grass = new Grass(0.0);
+                bushOne = new DesertScrub(0.0);
+                bushTwo = new Scrub(0.0);
                 break;
             case 2:
                 // tundra
                 grass = new Grass(0.0);
+                bushOne = new Shrub(0.0);
+                bushTwo = new Scrub(0.0);
                 break;
             case 3:
                 // boreal
                 tree = new PineTree(0.0);
+                bushOne = new Shrub(0.0);
+                bushTwo = new Scrub(0.0);
                 break;
             case 4:
                 // artic marsh
                 tree = new PineTree(0.0);
+                bushOne = new Shrub(0.0);
                 break;
             case 5:
                 // desert
                 grass = new Grass(0.0);
+                bushOne = new DesertScrub(0.0);
+                bushTwo = new Scrub(0.0);
                 break;
             case 6:
                 // plains
                 grass = new Grass(0.0);
+                bushOne = new Shrub(0.0);
+                bushTwo = new Scrub(0.0);
                 break;
             case 7:
                 // forest
                 tree = new OakTree(0.0);
+                bushOne = new Shrub(0.0);
+                bushTwo = new Scrub(0.0);
                 break;
             case 8:
                 // swamp
                 tree = new OakTree(0.0);
+                bushOne = new Shrub(0.0);
                 break;
             case 9:
                 // hot desert
                 grass = new Grass(0.0);
+                bushOne = new DesertScrub(0.0);
+                bushTwo = new Scrub(0.0);
                 break;
             case 10:
                 // savannah
                 grass = new Grass(0.0);
+                bushOne = new Shrub(0.0);
+                bushTwo = new Scrub(0.0);
                 break;
             case 11:
                 // monsoon forest
                 tree = new TropicalTree(0.0);
+                bushOne = new Shrub(0.0);
+                bushTwo = new Scrub(0.0);
                 break;
             case 12:
                 // rainforest
                 tree = new TropicalTree(0.0);
+                bushOne = new Shrub(0.0);
                 break;
         }
     }
@@ -148,9 +172,23 @@ public class Subhabitat
     public double getFoilage(int day, Days[] days)
     {
         double foilage = 0.0;
+        double usagePercent = 0.0;
         if (tree != null)
         {
-            foilage += tree.getTreeFoilage(day, percentage, quality, days[day].temp, (int) usage,index % 4 == 0);
+            foilage += tree.getTreeFoilage(day, percentage, quality, days[day].temp, (int) usage, index % 4 == 0);
+            // usagePercent = usage / tree.getTreesOnTile(percentage, quality, index % 4 == 0);
+        }
+        if (grass != null)
+        {
+            // usagePercent = usage / grass.getGrass(index % 4 == 0, quality, percentage, Last5DaysOfRain(day, days), days[day].temp);
+        }
+        if (bushOne != null)
+        {
+            foilage += bushOne.getFoilage(percentage - usagePercent, ((index - 1) / 4) == 0, ((index - 1) / 4) == 2);
+        }
+        if (bushTwo != null)
+        {
+            foilage += bushTwo.getFoilage(percentage - usagePercent, ((index - 1) / 4) == 0, ((index - 1) / 4) == 2);
         }
         return foilage;
     }
