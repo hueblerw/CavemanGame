@@ -239,4 +239,10 @@ public class Support {
         }
     }
 
+    // Averages two doubles
+    public static double Average(double a, double b)
+    {
+        return (a + b) / 2.0;
+    }
+
 }

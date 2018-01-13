@@ -123,6 +123,21 @@ public class Habitat {
     }
 
 
+    private string printYearOfCrops(Days[] days)
+    {
+        double[] sum = new double[Crop.NUM_OF_CROPS];
+        for (int i = 0; i < typePercents.Length; i++)
+        {
+            double[] cropsArray = typePercents[i].getYearOfCrops(days);
+            for (int j = 0; j < cropsArray.Length; j++)
+            {
+                sum[j] += cropsArray[j];
+            }
+        }
+        return Subhabitat.CreateCropArrayPrintString(sum);
+    }
+
+
     // Return a string with the habitat stats in it
     public override string ToString()
     {
@@ -143,6 +158,7 @@ public class Habitat {
         string life = "Plants: \nPine Trees: " + getTrees("pine") + "\tOaks: " + getTrees("oaks") + "\tTropical: " + getTrees("tropical");
         life += "\nSeeds for Year: " + getYearOfSeeds(days) + "\tFoilage for Year: " + getYearOfFoilage(days);
         life += "\nGrazing for Year: " + getYearOfGrazing(days);
+        life += "\nCrops for Year: " + printYearOfCrops(days);
         return life;
     }
 

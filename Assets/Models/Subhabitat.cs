@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections.Generic;
 
 public class Subhabitat
 {
@@ -23,6 +21,7 @@ public class Subhabitat
     private Bush bushOne;
     private Bush bushTwo;
 
+    private static Crop[] crops;
     private static Dictionary<int, string> indexToStringMap;
     private static Dictionary<string, int> stringToIndexMap;
 
@@ -193,6 +192,18 @@ public class Subhabitat
         return foilage;
     }
 
+    public double[] getCrops(int day, Days[] days)
+    {
+        double[] cropsArray = new double[Crop.NUM_OF_CROPS];
+        double usagePercent = 0.0;
+        for (int i = 0; i < cropsArray.Length; i++)
+        {
+            cropsArray[i] = crops[i].ReturnCurrentCropArray(day, percentage - usagePercent, days);
+        }
+
+        return cropsArray;
+    }
+
     // Get Vegetation Yearly values
 
     public double getYearOfSeeds(Days[] days)
@@ -225,11 +236,60 @@ public class Subhabitat
         return sum;
     }
 
+    public double[] getYearOfCrops(Days[] days)
+    {
+        double[] cropSum = new double[Crop.NUM_OF_CROPS];
+        for (int d = 0; d < days.Length; d++)
+        {
+            double[] array = getCrops(d, days);
+            for (int i = 0; i < cropSum.Length; i++)
+            {
+                cropSum[i] += array[i];
+            }
+        }
+        return cropSum;
+    }
+
+    // Last X Days Methods
+
+    // Return an array containing totals of each crop the last X Days.
+    public double[] SumCropsForLastX(int day, Days[] days)
+    {
+        double[] cropSum = new double[Crop.NUM_OF_CROPS];
+        for (int d = day - Crop.LAST_X_DAYS + 1; d < day; d++)
+        {
+            double[] array = getCrops(d, days);
+            for (int i = 0; i < cropSum.Length; i++)
+            {
+                cropSum[i] += array[i];
+            }
+        }
+
+        return cropSum;
+    }
+
     // METHODS
 
     public double Last5DaysOfRain(int day, Days[] days)
     {
         return 0.0;
+    }
+
+    // PRINTING
+
+    // Create CropArrayPrintString
+    public static string CreateCropArrayPrintString(double[] cropArray)
+    {
+        string printString = "";
+        // convert all non-zero values to the appropriate display strings
+        for (int i = 0; i < cropArray.Length; i++)
+        {
+            if (cropArray[i] != 0.0)
+            {
+                printString += crops[i].getName() + ": " + cropArray[i] + "\n";
+            }
+        }
+        return printString;
     }
 
     // INDEXING
@@ -249,6 +309,7 @@ public class Subhabitat
         if (indexToStringMap == null)
         {
             initializeIndexMap();
+            setupCropArray();
         }
 
         return indexToStringMap[index];
@@ -278,6 +339,23 @@ public class Subhabitat
     {
         indexToStringMap.Add(index, habitat);
         stringToIndexMap.Add(habitat, index);
+    }
+
+    private static void setupCropArray()
+    {
+        crops = new Crop[Crop.NUM_OF_CROPS];
+        crops[0] = new AppleTree(0.0);
+        crops[1] = new Beans(0.0);
+        crops[2] = new Berries(0.0);
+        crops[3] = new Carrot(0.0);
+        crops[4] = new Corn(0.0);
+        crops[5] = new Grape(0.0);
+        crops[6] = new Nuts(0.0);
+        crops[7] = new Onions(0.0);
+        crops[8] = new Potato(0.0);
+        crops[9] = new Rice(0.0);
+        crops[10] = new Roots(0.0);
+        crops[11] = new Wheat(0.0);
     }
 
 }
