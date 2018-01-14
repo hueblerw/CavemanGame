@@ -32,8 +32,8 @@ public class Grass : Plant {
 
     public double getSeeds(bool desert, int quality, double percentage, double last5Rain, double temp, double usage)
     {
-        double seeds = ((getGrass(desert, quality, percentage, last5Rain, temp) - usage) / Habitat.FORAGECONSTANT) / GRASSCALORIECONTENT;
-        return (seeds * Habitat.SEEDCONSTANT);
+        double grass = (getGrass(desert, quality, percentage, last5Rain, temp) - usage) ;
+        return (grass * Habitat.SEEDCONSTANT);
     }
 
 }

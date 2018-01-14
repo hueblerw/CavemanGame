@@ -147,7 +147,7 @@ public class Subhabitat
         {
             double last5Rain = Last5DaysOfRain(day, days);
             double grassMass = grass.getGrass(index % 4 == 1, quality, percentage, last5Rain, days[day].temp) - usage;
-            grazing += grassMass * Grass.GRASSCALORIECONTENT;
+            grazing += grassMass * Habitat.FORAGECONSTANT * Grass.GRASSCALORIECONTENT;
         }
 
         return grazing;

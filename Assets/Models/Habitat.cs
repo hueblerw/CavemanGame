@@ -89,6 +89,57 @@ public class Habitat {
         return sum;
     }
 
+    // GET DAILY LIFE VALUES
+
+    private double getTodaysSeeds(int day, Days[] days)
+    {
+        double sum = 0;
+        for (int i = 0; i < typePercents.Length; i++)
+        {
+            sum += typePercents[i].getSeeds(day, days);
+        }
+        return sum;
+    }
+
+
+    private double getTodaysFoilage(int day, Days[] days)
+    {
+        double sum = 0.0;
+        for (int i = 0; i < typePercents.Length; i++)
+        {
+            sum += typePercents[i].getFoilage(day, days);
+        }
+        return sum;
+    }
+
+
+    private double getTodaysGrazing(int day, Days[] days)
+    {
+        double sum = 0.0;
+        for (int i = 0; i < typePercents.Length; i++)
+        {
+            sum += typePercents[i].getGrazing(day, days);
+        }
+        return sum;
+    }
+
+
+    private string printLastXDaysCrops(int day, Days[] days)
+    {
+        double[] sum = new double[Crop.NUM_OF_CROPS];
+        for (int i = 0; i < typePercents.Length; i++)
+        {
+            double[] cropsArray = typePercents[i].SumCropsForLastX(day, days);
+            for (int j = 0; j < cropsArray.Length; j++)
+            {
+                sum[j] += cropsArray[j];
+            }
+        }
+        return Subhabitat.CreateCropArrayPrintString(sum);
+    }
+
+
+    // GET YEARLY LIFE VALUES
 
     private double getYearOfSeeds(Days[] days)
     {
@@ -155,11 +206,31 @@ public class Habitat {
 
     public string printLifeInfo(Days[] days)
     {
-        string life = "Plants: \nPine Trees: " + getTrees("pine") + "\tOaks: " + getTrees("oaks") + "\tTropical: " + getTrees("tropical");
+        string life = "Plants For Year: " + printTreeInfo();
         life += "\nSeeds for Year: " + getYearOfSeeds(days) + "\tFoilage for Year: " + getYearOfFoilage(days);
         life += "\nGrazing for Year: " + getYearOfGrazing(days);
         life += "\nCrops for Year: " + printYearOfCrops(days);
         return life;
+    }
+
+
+    public string printLifeInfo(int day, Days[] days)
+    {
+        string life = "Plants For Today: " + printTreeInfo();
+        life += "\nSeeds today: " + getTodaysSeeds(day, days) + "\tFoilage for Year: " + getTodaysFoilage(day, days);
+        life += "\nGrazing today: " + getTodaysGrazing(day, days);
+        life += "\nCrops today: " + printLastXDaysCrops(day, days);
+        return life;
+    }
+
+
+    private string printTreeInfo()
+    {
+        string treeInfo = "\n";
+        treeInfo += "Pine: " + getTrees("pine");
+        treeInfo += "\tOaks: " + getTrees("oaks");
+        treeInfo += "\tTropical" + getTrees("tropical");
+        return treeInfo;
     }
 
 }
