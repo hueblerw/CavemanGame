@@ -1,19 +1,12 @@
 ﻿using System;
 
-
 public class Habitat {
 
     // Constants
     public const double RIVERWATERINGCONSTANT = .2;
     public const double FORAGECONSTANT = .2;
     public const double SEEDCONSTANT = 1.5 * 0.002314009;
-    public const double SHRUBCONSTANT = 45.0 * 0.004338767;
-    public const double SCRUBCONSTANT = 55.0 * 0.006363525;
-    public const double DESERTSCRUBCONSTANT = 35.0 * 0.004049516;
     public const double FORESTLEAVESCONSTANT = 200.0 * 0.019283411;
-    public const double PINENEEDLECONSTANT = 150.0 * 0.008677535;
-    public const double TROPICALEAFGROWTH = 1.2;
-    public const double ARTICLEAFGROWTH = 0.8;
     private double EnvironmentalShiftFactor = .01; // +/- 1% a year
     private double GlacialShiftFactor = .10; // +/- 10% a year
     public const double RIVER_EFFECT_FACTOR = (RIVERWATERINGCONSTANT / 2.0);  // 10% of river volume added to the tiles rainfall
@@ -22,143 +15,39 @@ public class Habitat {
 
     // Variables
     public string dominantType;
-    public double[] typePercents;
-
+    public Subhabitat[] typePercents;
 
     // Constructor
     public Habitat(double oceanPer, int[] habitatCounters)
     {
-        typePercents = new double[TOTAL_LAND_HABITATS + 1];
+        typePercents = new Subhabitat[TOTAL_LAND_HABITATS + 1];
+        for (int i = 0; i < TOTAL_LAND_HABITATS + 1; i++)
+        {
+            typePercents[i] = new Subhabitat(i);
+        }
         CreateInitialPercentage(oceanPer, habitatCounters);
-        dominantType = IndexToString(getDominantIndex());
+        dominantType = Subhabitat.IndexToString(getDominantIndex());
     }
 
-
     // PRIVATE METHODS
+
     // Initialize the Habitats based on the counter array
     private void CreateInitialPercentage(double oceanPer, int[] habitatCounters)
     {
         for (int i = 0; i < habitatCounters.Length; i++)
         {
             // Debug.Log(habitatCounters[i] + ", " + oceanPer);
-            typePercents[i] = Math.Round((habitatCounters[i] / 20.0) * (1.0 - oceanPer), 2);
+            typePercents[i].setPercentage(Math.Round((habitatCounters[i] / 20.0) * (1.0 - oceanPer), 2));
             // Debug.Log(i + " - " + typePercents[i]);
         }
-        typePercents[13] = oceanPer;
-    }
-
-
-    // Convert the index to a habitat string
-    private string IndexToString(int index)
-    {
-        string name = "";
-        switch (index)
-        {
-            case 0:
-                name = "glacier";
-                break;
-            case 1:
-                name = "dry tundra";
-                break;
-            case 2:
-                name = "tundra";
-                break;
-            case 3:
-                name = "boreal";
-                break;
-            case 4:
-                name = "artic marsh";
-                break;
-            case 5:
-                name = "desert";
-                break;
-            case 6:
-                name = "plains";
-                break;
-            case 7:
-                name = "forest";
-                break;
-            case 8:
-                name = "swamp";
-                break;
-            case 9:
-                name = "hot desert";
-                break;
-            case 10:
-                name = "savannah";
-                break;
-            case 11:
-                name = "monsoon forest";
-                break;
-            case 12:
-                name = "rainforest";
-                break;
-            case 13:
-                name = "ocean";
-                break;
-        }
-
-        return name;
-    }
-
-    // Convert String name to index number
-    public static int StringToIndex(string name)
-    {
-        int index = -1;
-        switch (name)
-        {
-            case "glacier":
-                index = 0;
-                break;
-            case "dry_tundra":
-                index = 1;
-                break;
-            case "tundra":
-                index = 2;
-                break;
-            case "boreal":
-                index = 3;
-                break;
-            case "artic_marsh":
-                index = 4;
-                break;
-            case "desert":
-                index = 5;
-                break;
-            case "plains":
-                index = 6;
-                break;
-            case "forest":
-                index = 7;
-                break;
-            case "swamp":
-                index = 8;
-                break;
-            case "hot_desert":
-                index = 9;
-                break;
-            case "savannah":
-                index = 10;
-                break;
-            case "monsoon_forest":
-                index = 11;
-                break;
-            case "rainforest":
-                index = 12;
-                break;
-            case "ocean":
-                index = 13;
-                break;
-        }
-
-        return index;
+        typePercents[13].setPercentage(oceanPer);
     }
 
 
     // determine the dominant type
     private string CheckDominantType()
     {
-        return IndexToString(getDominantIndex());
+        return Subhabitat.IndexToString(getDominantIndex());
     }
 
 
@@ -170,7 +59,7 @@ public class Habitat {
             int maxIndex = 0;
             for (int i = 0; i < typePercents.Length - 1; i++)
             {
-                if (typePercents[i] > typePercents[maxIndex])
+                if (typePercents[i].getPercentage() > typePercents[maxIndex].getPercentage())
                 {
                     maxIndex = i;
                 }
@@ -186,7 +75,117 @@ public class Habitat {
 
     private double getOceanPercents()
     {
-        return typePercents[13];
+        return typePercents[13].getPercentage();
+    }
+
+
+    private int getTrees(string type)
+    {
+        int sum = 0;
+        for (int i = 0; i < typePercents.Length; i++)
+        {
+            sum += typePercents[i].getTrees(type);
+        }
+        return sum;
+    }
+
+    // GET DAILY LIFE VALUES
+
+    private double getTodaysSeeds(int day, Days[] days)
+    {
+        double sum = 0;
+        for (int i = 0; i < typePercents.Length; i++)
+        {
+            sum += typePercents[i].getSeeds(day, days);
+        }
+        return sum;
+    }
+
+
+    private double getTodaysFoilage(int day, Days[] days)
+    {
+        double sum = 0.0;
+        for (int i = 0; i < typePercents.Length; i++)
+        {
+            sum += typePercents[i].getFoilage(day, days);
+        }
+        return sum;
+    }
+
+
+    private double getTodaysGrazing(int day, Days[] days)
+    {
+        double sum = 0.0;
+        for (int i = 0; i < typePercents.Length; i++)
+        {
+            sum += typePercents[i].getGrazing(day, days);
+        }
+        return sum;
+    }
+
+
+    private string printLastXDaysCrops(int day, Days[] days)
+    {
+        double[] sum = new double[Crop.NUM_OF_CROPS];
+        for (int i = 0; i < typePercents.Length; i++)
+        {
+            double[] cropsArray = typePercents[i].SumCropsForLastX(day, days);
+            for (int j = 0; j < cropsArray.Length; j++)
+            {
+                sum[j] += cropsArray[j];
+            }
+        }
+        return Subhabitat.CreateCropArrayPrintString(sum);
+    }
+
+
+    // GET YEARLY LIFE VALUES
+
+    private double getYearOfSeeds(Days[] days)
+    {
+        double sum = 0;
+        for (int i = 0; i < typePercents.Length; i++)
+        {
+            sum += typePercents[i].getYearOfSeeds(days);
+        }
+        return sum;
+    }
+
+
+    private double getYearOfFoilage(Days[] days)
+    {
+        double sum = 0.0;
+        for (int i = 0; i < typePercents.Length; i++)
+        {
+            sum += typePercents[i].getYearOfFoilage(days);
+        }
+        return sum;
+    }
+
+
+    private double getYearOfGrazing(Days[] days)
+    {
+        double sum = 0.0;
+        for (int i = 0; i < typePercents.Length; i++)
+        {
+            sum += typePercents[i].getYearOfGrazing(days);
+        }
+        return sum;
+    }
+
+
+    private string printYearOfCrops(Days[] days)
+    {
+        double[] sum = new double[Crop.NUM_OF_CROPS];
+        for (int i = 0; i < typePercents.Length; i++)
+        {
+            double[] cropsArray = typePercents[i].getYearOfCrops(days);
+            for (int j = 0; j < cropsArray.Length; j++)
+            {
+                sum[j] += cropsArray[j];
+            }
+        }
+        return Subhabitat.CreateCropArrayPrintString(sum);
     }
 
 
@@ -196,12 +195,42 @@ public class Habitat {
         string data = "Habitats: ";
         for (int i = 0; i < typePercents.Length; i++)
         {
-            if (typePercents[i] != 0.0)
+            if (typePercents[i].getPercentage() != 0.0)
             {
-                data += "\n" + typePercents[i] * 100.0 + "% " + IndexToString(i);
+                data += "\n" + typePercents[i].getPercentage() * 100.0 + "% " + Subhabitat.IndexToString(i);
             }
         }
         return data;
+    }
+
+
+    public string printLifeInfo(Days[] days)
+    {
+        string life = "Plants For Year: " + printTreeInfo();
+        life += "\nSeeds for Year: " + getYearOfSeeds(days) + "\tFoilage for Year: " + getYearOfFoilage(days);
+        life += "\nGrazing for Year: " + getYearOfGrazing(days);
+        life += "\nCrops for Year: " + printYearOfCrops(days);
+        return life;
+    }
+
+
+    public string printLifeInfo(int day, Days[] days)
+    {
+        string life = "Plants For Today: " + printTreeInfo();
+        life += "\nSeeds today: " + getTodaysSeeds(day, days) + "\tFoilage for Year: " + getTodaysFoilage(day, days);
+        life += "\nGrazing today: " + getTodaysGrazing(day, days);
+        life += "\nCrops today: " + printLastXDaysCrops(day, days);
+        return life;
+    }
+
+
+    private string printTreeInfo()
+    {
+        string treeInfo = "\n";
+        treeInfo += "Pine: " + getTrees("pine");
+        treeInfo += "\tOaks: " + getTrees("oaks");
+        treeInfo += "\tTropical" + getTrees("tropical");
+        return treeInfo;
     }
 
 }
