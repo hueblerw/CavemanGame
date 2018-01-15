@@ -9,11 +9,13 @@ public class TwoDWorldView {
 
     private const int BLANK_TILE_INDEX = 5;
     private const int PIXELSPERTILE = 64;
-    private const int MAP_LAYERS = 3;
+    private const int MAP_LAYERS = 4;
     private const int MAX_RIVER_WIDTH = 40;
     private Color dryRiverColor = new Color(.839f, .573f, .039f);
     public const float TILESIZE = 60.0f;
     public const float HEIGHTSCALE = TILESIZE / (float) World.WIDTH_HEIGHT_RATIO;
+    private const double MAX_SNOW_CHANGE = 20.0;
+    private const double BLANK_ALPHA_VALUE = 22.0;
 
     private int worldX;
     private int worldZ;
@@ -28,6 +30,7 @@ public class TwoDWorldView {
     private Texture2D localMapTiles;
     // Caches
     private List<Texture2D> riverTilesCache;
+    private Dictionary<double, Texture2D> snowTileCache;
     private Texture2D dryRiverTiles;
     private int[,] riverWidthCache;
     private int[,] habitatIndexCache;
@@ -46,6 +49,8 @@ public class TwoDWorldView {
     {
         Debug.Log("View Initialized!");
         riverTilesCache = new List<Texture2D>();
+        snowTileCache = new Dictionary<double, Texture2D>();
+        snowTileCache.Add(0.00, CreateBlankWhiteSquareWithAlpha(0));
         worldX = World.getMyInstance().X;
         worldZ = World.getMyInstance().Z;
         // Construct the elevation vertices
@@ -299,11 +304,13 @@ public class TwoDWorldView {
         int riverWidth;
         Texture2D downTexture = new Texture2D(worldX * PIXELSPERTILE, worldZ * PIXELSPERTILE);
         Texture2D upTexture = new Texture2D(worldX * PIXELSPERTILE, worldZ * PIXELSPERTILE);
+        Texture2D snowTexture = new Texture2D(worldX * PIXELSPERTILE, worldZ * PIXELSPERTILE);
         for (int x = 0; x < worldX; x++)
         {
             for (int z = 0; z < worldZ; z++)
             {
                 riverWidth = CalculateWidth(x, z, day);
+                snowTexture = AddSnowTileToTexture(x, z, World.getMyInstance().worldArray[x, z].dayArray[day].snowCover, snowTexture);
                 riverWidthCache[x, z] = riverWidth;
                 downRiverIndex = getDownstreamIndex(x, z);
                 if (riverWidth != 0)
@@ -313,17 +320,25 @@ public class TwoDWorldView {
                 }
                 else
                 {
-                    // downTexture = placeTileInTexture(x, z, downRiverIndex, downTexture, dryRiverTiles);
-                    downTexture = placeTileInTexture(x, z, BLANK_TILE_INDEX, downTexture, riverTilesCache[0]);
-                    upTexture = DrawUpstreamSegments(x, z, day, 0, upTexture);
+                    if (downRiverIndex == 0)
+                    {
+                        downTexture = placeTileInTexture(x, z, downRiverIndex, downTexture, dryRiverTiles);
+                    }
+                    else
+                    {
+                        downTexture = placeTileInTexture(x, z, BLANK_TILE_INDEX, downTexture, riverTilesCache[0]);
+                        upTexture = DrawUpstreamSegments(x, z, day, 0, upTexture);
+                    }
                 }
             }
         }
 
         downTexture.Apply();
         upTexture.Apply();
+        snowTexture.Apply();
         downstreamRiverLayer = downTexture;
         upstreamRiverLayer = upTexture;
+        snowTextureLayer = snowTexture;
         Debug.Log("Rivers Applied");
     }
 
@@ -334,11 +349,13 @@ public class TwoDWorldView {
         int riverWidth;
         Texture2D downTexture = (Texture2D) downstreamRiverLayer;
         Texture2D upTexture = (Texture2D) upstreamRiverLayer;
+        Texture2D snowTexture = (Texture2D) snowTextureLayer;
         for (int x = 0; x < worldX; x++)
         {
             for (int z = 0; z < worldZ; z++)
             {
                 riverWidth = CalculateWidth(x, z, day);
+                snowTexture = AddSnowTileToTexture(x, z, World.getMyInstance().worldArray[x, z].dayArray[day - 1].snowCover, snowTexture);
                 if (riverWidth != riverWidthCache[x, z])
                 {
                     riverWidthCache[x, z] = riverWidth;
@@ -350,9 +367,15 @@ public class TwoDWorldView {
                     }
                     else
                     {
-                        // downTexture = placeTileInTexture(x, z, downRiverIndex, downTexture, dryRiverTiles);
-                        downTexture = placeTileInTexture(x, z, BLANK_TILE_INDEX, downTexture, riverTilesCache[0]);
-                        upTexture = DrawUpstreamSegments(x, z, day, 0, upTexture);
+                        if (downRiverIndex == 0)
+                        {
+                            downTexture = placeTileInTexture(x, z, downRiverIndex, downTexture, dryRiverTiles);
+                        }
+                        else
+                        {
+                            downTexture = placeTileInTexture(x, z, BLANK_TILE_INDEX, downTexture, riverTilesCache[0]);
+                            upTexture = DrawUpstreamSegments(x, z, day, 0, upTexture);
+                        }
                     }
                 }
             }
@@ -360,8 +383,10 @@ public class TwoDWorldView {
 
         downTexture.Apply();
         upTexture.Apply();
+        snowTexture.Apply();
         downstreamRiverLayer = downTexture;
         upstreamRiverLayer = upTexture;
+        snowTextureLayer = snowTexture;
     }
 
 
@@ -610,9 +635,56 @@ public class TwoDWorldView {
         mapTextures[0].mainTexture = mapTexture;
         mapTextures[1].mainTexture = downstreamRiverLayer;
         mapTextures[2].mainTexture = upstreamRiverLayer;
-        // mapTextures[3].mainTexture = snowTextureLayer;
+        mapTextures[3].mainTexture = snowTextureLayer;
         meshRenderer.sharedMaterials = mapTextures;
         return meshRenderer;
+    }
+
+
+    private Texture2D AddSnowTileToTexture(int x, int z, double snowCover, Texture2D snowTexture)
+    {
+        double alpha = SnowCoverToAlpha(snowCover);
+        Texture2D value;
+        if (!snowTileCache.TryGetValue(alpha, out value))
+        {
+            value = CreateBlankWhiteSquareWithAlpha(alpha);
+            snowTileCache.Add(alpha, value);
+        }
+
+        return placeTileInTexture(x, z, 0, snowTexture, value);
+    }
+
+
+    private Texture2D CreateBlankWhiteSquareWithAlpha(double alpha)
+    {
+        Texture2D snow = new Texture2D(PIXELSPERTILE, PIXELSPERTILE);
+        Color snowColor = Color.white;
+        snowColor.a = (float) alpha;
+        for (int i = 0; i < PIXELSPERTILE; i++)
+        {
+            for (int j = 0; j < PIXELSPERTILE; j++)
+            {
+                snow.SetPixel(i, j, snowColor);
+            }
+        }
+        return snow;
+    }
+
+
+    private double SnowCoverToAlpha(double snowCover)
+    {
+        if (snowCover >= MAX_SNOW_CHANGE)
+        {
+            return 230;
+        }
+        else if(snowCover == 0.0)
+        {
+            return 0;
+        }
+        else
+        {
+            return Math.Round((70.0 + (snowCover / MAX_SNOW_CHANGE) * 180.0) / 255.0, 2);
+        }
     }
 
 
