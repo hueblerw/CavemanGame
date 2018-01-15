@@ -310,7 +310,7 @@ public class TwoDWorldView {
             for (int z = 0; z < worldZ; z++)
             {
                 riverWidth = CalculateWidth(x, z, day);
-                snowTexture = AddSnowTileToTexture(x, z, World.getMyInstance().worldArray[x, z].dayArray[day].snowCover, snowTexture);
+                snowTexture = AddSnowTileToTexture(x, z, World.getMyInstance().worldArray[x, z].dayArray[day - 1].snowCover, snowTexture);
                 riverWidthCache[x, z] = riverWidth;
                 downRiverIndex = getDownstreamIndex(x, z);
                 if (riverWidth != 0)
