@@ -229,7 +229,7 @@ public class Habitat {
         string treeInfo = "\n";
         treeInfo += "Pine: " + getTrees("pine");
         treeInfo += "\tOaks: " + getTrees("oaks");
-        treeInfo += "\tTropical" + getTrees("tropical");
+        treeInfo += "\tTropical: " + getTrees("tropical");
         return treeInfo;
     }
 

@@ -50,7 +50,7 @@ public class TwoDWorldView {
         Debug.Log("View Initialized!");
         riverTilesCache = new List<Texture2D>();
         snowTileCache = new Dictionary<double, Texture2D>();
-        snowTileCache.Add(0.00, CreateBlankWhiteSquareWithAlpha(0));
+        snowTileCache.Add(0.00, CreateBlankWhiteSquareWithAlpha(0.0));
         worldX = World.getMyInstance().X;
         worldZ = World.getMyInstance().Z;
         // Construct the elevation vertices
@@ -544,6 +544,8 @@ public class TwoDWorldView {
     {
         Texture2D texture = new Texture2D(PIXELSPERTILE, PIXELSPERTILE);
         Texture2D riverMapTexture = riverListTexture;
+        texture = ExpandLake(texture, riverWidth);
+        riverMapTexture = placeTileInTexture(0, 0, 0, riverMapTexture, texture);
         for (int n = 1; n < 5; n++)
         {
             Graphics.CopyTexture(getRiverSection(n, riverWidth - 1), texture);
@@ -559,6 +561,22 @@ public class TwoDWorldView {
         }
 
         return riverMapTexture;
+    }
+
+
+    private Texture2D ExpandLake(Texture2D texture, int riverWidth)
+    {
+        Graphics.CopyTexture(getRiverSection(0, riverWidth - 1), texture);
+        if (riverWidth % 4 <= 2)
+        {
+            texture = ExpandUpDownRiver(texture, riverWidth);
+        }
+        else
+        {
+            texture = ExpandLeftRightRiver(texture, riverWidth);
+        }
+        
+        return texture;
     }
 
 
@@ -580,7 +598,11 @@ public class TwoDWorldView {
                     }
                     else
                     {
-                        riverListTexture.SetPixel(i, j + riverWidth - 1, waterColor);
+                        while(riverListTexture.GetPixel(i, j).a == 0)
+                        {
+                            j++;
+                        }
+                        riverListTexture.SetPixel(i, j + 1, waterColor);
                     }
                 }
                 j++;
@@ -611,7 +633,11 @@ public class TwoDWorldView {
                     }
                     else
                     {
-                        riverListTexture.SetPixel(i + riverWidth - 1, j, waterColor);
+                        while (riverListTexture.GetPixel(i, j).a == 0)
+                        {
+                            i++;
+                        }
+                        riverListTexture.SetPixel(i + 1, j, waterColor);
                     }
                 }
                 i++;
